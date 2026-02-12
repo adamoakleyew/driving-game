@@ -176,12 +176,65 @@
     animation: pulse 0.8s ease-in-out infinite alternate;
   }
   @keyframes pulse { from { opacity: 0.5; } to { opacity: 1; } }
+
+  /* ── Builder ── */
+  .btn-builder { background: linear-gradient(135deg, #7C4DFF, #B388FF); color: #fff; box-shadow: 0 0 25px rgba(124,77,255,0.3); }
+  .builder-form { width: 100%; max-width: 500px; padding: 0 20px; }
+  .builder-row { display: flex; align-items: center; gap: 10px; margin: 6px 0; }
+  .builder-row label {
+    font-family: 'Orbitron', sans-serif; font-size: 10px; color: #aaa;
+    min-width: 90px; letter-spacing: 1px;
+  }
+  .builder-row input[type="text"],
+  .builder-row input[type="number"] {
+    flex: 1; background: rgba(255,255,255,0.08); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 8px; padding: 8px 12px; color: #fff; font-family: 'Rajdhani', sans-serif;
+    font-size: 14px; outline: none;
+  }
+  .builder-row input:focus { border-color: rgba(124,77,255,0.5); }
+  .builder-row input[type="color"] { width: 40px; height: 32px; border: none; border-radius: 6px; cursor: pointer; background: transparent; }
+  .builder-row input[type="range"] { flex: 1; accent-color: #7C4DFF; }
+  .builder-row .range-val { font-family: 'Orbitron', sans-serif; font-size: 10px; color: #7C4DFF; min-width: 30px; text-align: right; }
+  .builder-section-title {
+    font-family: 'Orbitron', sans-serif; font-size: 11px; color: #666;
+    letter-spacing: 2px; margin: 12px 0 6px; border-bottom: 1px solid rgba(255,255,255,0.06); padding-bottom: 4px;
+  }
+  .builder-preview { width: 100%; height: 60px; border-radius: 8px; margin: 10px 0; border: 1px solid rgba(255,255,255,0.1); }
+  .custom-section-title { font-family: 'Orbitron', sans-serif; font-size: 11px; color: #B388FF; letter-spacing: 2px; margin: 14px 0 8px; }
+  .custom-level-row {
+    display: flex; align-items: center; justify-content: space-between;
+    background: rgba(124,77,255,0.08); border: 1px solid rgba(124,77,255,0.15);
+    border-radius: 10px; padding: 10px 14px; margin: 4px 0;
+  }
+  .custom-level-name { font-family: 'Orbitron', sans-serif; font-size: 12px; color: #fff; }
+  .custom-level-desc { font-size: 11px; color: #888; }
+  .custom-level-actions { display: flex; gap: 6px; }
+  .custom-level-actions button {
+    padding: 5px 12px; font-family: 'Orbitron', sans-serif; font-size: 9px;
+    border: none; border-radius: 10px; cursor: pointer; font-weight: 700; transition: all 0.2s;
+  }
+  .custom-play-btn { background: #7C4DFF; color: #fff; }
+  .custom-play-btn:hover { filter: brightness(1.2); }
+  .custom-del-btn { background: rgba(255,68,68,0.2); color: #ff5252; }
+  .custom-del-btn:hover { background: rgba(255,68,68,0.4); }
+  .custom-tag { font-family:'Orbitron'; font-size:8px; color:#B388FF; letter-spacing:2px; background:rgba(124,77,255,0.15); padding:2px 8px; border-radius:8px; }
+
+  /* ── Audio Toggle ── */
+  .audio-toggle {
+    position: absolute; top: 8px; right: 8px;
+    background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.15);
+    border-radius: 50%; width: 32px; height: 32px; cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 16px; transition: all 0.2s; z-index: 10;
+  }
+  .audio-toggle:hover { background: rgba(255,255,255,0.2); }
 </style>
 </head>
 <body>
 <div id="game-wrapper">
   <canvas id="game" width="640" height="880"></canvas>
   <div id="overlay"></div>
+  <div class="audio-toggle" onclick="toggleAudio()" id="audioBtn">&#x1F50A;</div>
 </div>
 <script>
 // ─── SETUP ──────────────────────────────────────────────
@@ -218,6 +271,30 @@ const LEVELS = [
     skyTop: '#c33764', skyBot: '#1d2671', grass: '#1a3d1a', grassAlt: 'rgba(30,50,30,0.4)',
     road: ['#2a2a2a','#3a3a3a','#2a2a2a'], rumble: '#cc3333',
     trafficMult: 2.0, obstacleMult: 1.3, speedMult: 1.15, diffRate: 5000, night: false },
+  { name: 'Foggy Morning', desc: 'Mist and mystery', target: 3500, reward: 160,
+    skyTop: '#a8b5c0', skyBot: '#8a9ba8', grass: '#3a6b3a', grassAlt: 'rgba(60,110,60,0.3)',
+    road: ['#5a5a5a','#6a6a6a','#5a5a5a'], rumble: '#aa5555',
+    trafficMult: 1.2, obstacleMult: 1.5, speedMult: 0.95, diffRate: 6000, night: false, fog: true },
+  { name: 'Country Road', desc: 'Winding and wild', target: 4000, reward: 180,
+    skyTop: '#87CEEB', skyBot: '#98D098', grass: '#228B22', grassAlt: 'rgba(40,140,40,0.4)',
+    road: ['#6a5a4a','#7a6a5a','#6a5a4a'], rumble: '#886633',
+    trafficMult: 0.9, obstacleMult: 1.8, speedMult: 1.05, diffRate: 5500, night: false },
+  { name: 'Rainy Day', desc: 'Slippery when wet', target: 5000, reward: 220,
+    skyTop: '#3a3f47', skyBot: '#2a3540', grass: '#1a4a2a', grassAlt: 'rgba(30,70,40,0.35)',
+    road: ['#333840','#3a4048','#333840'], rumble: '#556677',
+    trafficMult: 1.3, obstacleMult: 2.0, speedMult: 1.1, diffRate: 5000, night: false, rain: true },
+  { name: 'Desert Dash', desc: 'Scorching heat', target: 5500, reward: 250,
+    skyTop: '#ff9966', skyBot: '#ff5e62', grass: '#c2a645', grassAlt: 'rgba(180,160,60,0.3)',
+    road: ['#8a7a60','#9a8a70','#8a7a60'], rumble: '#cc8833',
+    trafficMult: 1.5, obstacleMult: 1.6, speedMult: 1.2, diffRate: 4500, night: false },
+  { name: 'Sunset Strip', desc: 'Golden hour grind', target: 6000, reward: 280,
+    skyTop: '#ff6b35', skyBot: '#7b2ff7', grass: '#2a4a1a', grassAlt: 'rgba(40,70,30,0.4)',
+    road: ['#2a2030','#3a3040','#2a2030'], rumble: '#cc4444',
+    trafficMult: 1.8, obstacleMult: 1.5, speedMult: 1.15, diffRate: 4500, night: false },
+  { name: 'Arctic Freeze', desc: 'Ice cold chaos', target: 7000, reward: 320,
+    skyTop: '#d4e5f7', skyBot: '#a0c4e8', grass: '#e8e8f0', grassAlt: 'rgba(200,210,230,0.3)',
+    road: ['#8899aa','#99aabb','#8899aa'], rumble: '#4488aa',
+    trafficMult: 1.6, obstacleMult: 2.0, speedMult: 1.2, diffRate: 4000, night: false },
   { name: 'Endless Mow', desc: 'No finish line', target: Infinity, reward: 0,
     skyTop: '#0d1b2a', skyBot: '#1b3a1b', grass: '#1a3d1a', grassAlt: 'rgba(30,70,30,0.4)',
     road: ['#2a2a2a','#3a3a3a','#2a2a2a'], rumble: '#cc3333',
@@ -283,9 +360,99 @@ function getUpgradeVal(key) {
   return 0;
 }
 
+// ─── CUSTOM LEVELS ──────────────────────────────────────
+function loadCustomLevels() {
+  try { return JSON.parse(localStorage.getItem('lawnRacerCustomLevels')) || []; }
+  catch { return []; }
+}
+function saveCustomLevels(arr) { localStorage.setItem('lawnRacerCustomLevels', JSON.stringify(arr)); }
+let customLevels = loadCustomLevels();
+
+// ─── AUDIO SYSTEM ───────────────────────────────────────
+let audioCtx = null, masterGain = null, musicGainNode = null;
+let audioEnabled = true, musicPlaying = false, musicInterval = null;
+
+function initAudio() {
+  if (audioCtx) { audioCtx.resume(); return; }
+  audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  masterGain = audioCtx.createGain();
+  masterGain.gain.value = 0.6;
+  masterGain.connect(audioCtx.destination);
+  musicGainNode = audioCtx.createGain();
+  musicGainNode.gain.value = 0.25;
+  musicGainNode.connect(masterGain);
+}
+
+function toggleAudio() {
+  audioEnabled = !audioEnabled;
+  document.getElementById('audioBtn').innerHTML = audioEnabled ? '&#x1F50A;' : '&#x1F507;';
+  if (!audioEnabled) stopMusic();
+  if (audioEnabled && state === 'playing') startMusic();
+}
+
+function playTone(freq, dur, type, vol, dest) {
+  if (!audioCtx || !audioEnabled) return;
+  const osc = audioCtx.createOscillator();
+  const g = audioCtx.createGain();
+  osc.type = type || 'square';
+  osc.frequency.value = freq;
+  g.gain.setValueAtTime(vol || 0.15, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  osc.connect(g); g.connect(dest || masterGain);
+  osc.start(); osc.stop(audioCtx.currentTime + dur + 0.05);
+}
+
+function playNoise(dur, vol) {
+  if (!audioCtx || !audioEnabled) return;
+  const len = audioCtx.sampleRate * dur;
+  const buf = audioCtx.createBuffer(1, len, audioCtx.sampleRate);
+  const d = buf.getChannelData(0);
+  for (let i = 0; i < len; i++) d[i] = (Math.random() * 2 - 1) * (1 - i / len);
+  const src = audioCtx.createBufferSource(); src.buffer = buf;
+  const g = audioCtx.createGain();
+  g.gain.setValueAtTime(vol || 0.3, audioCtx.currentTime);
+  g.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + dur);
+  src.connect(g); g.connect(masterGain); src.start();
+}
+
+function sfxPickup() { playTone(880, 0.08, 'sine', 0.2); setTimeout(() => playTone(1175, 0.12, 'sine', 0.15), 60); }
+function sfxCrash() { playNoise(0.4, 0.5); playTone(80, 0.3, 'sawtooth', 0.25); }
+function sfxObstacle() { playTone(180, 0.15, 'sawtooth', 0.12); playNoise(0.1, 0.15); }
+function sfxNitro() { playTone(120, 0.08, 'sawtooth', 0.1); }
+function sfxPass() { playTone(700, 0.04, 'sine', 0.06); }
+function sfxClick() { playTone(600, 0.06, 'sine', 0.1); }
+function sfxBuy() { playTone(440, 0.08, 'sine', 0.15); setTimeout(() => playTone(660, 0.08, 'sine', 0.15), 80); setTimeout(() => playTone(880, 0.12, 'sine', 0.15), 160); }
+function sfxLevelComplete() {
+  playTone(523, 0.15, 'sine', 0.25);
+  setTimeout(() => playTone(659, 0.15, 'sine', 0.25), 120);
+  setTimeout(() => playTone(784, 0.15, 'sine', 0.25), 240);
+  setTimeout(() => playTone(1047, 0.3, 'sine', 0.3), 360);
+}
+
+function startMusic() {
+  if (!audioCtx || !audioEnabled || musicPlaying) return;
+  musicPlaying = true;
+  let beat = 0;
+  const bass = [65.41, 65.41, 82.41, 82.41, 73.42, 73.42, 87.31, 87.31];
+  musicInterval = setInterval(() => {
+    if (!audioEnabled || state !== 'playing') { stopMusic(); return; }
+    if (beat % 2 === 0) playTone(bass[beat % bass.length], 0.18, 'triangle', 0.12, musicGainNode);
+    if (beat % 4 === 0) playTone(55, 0.12, 'sine', 0.18, musicGainNode);
+    if (beat % 2 === 1) playNoise(0.03, 0.06);
+    if (beat % 8 === 0) playTone(330 + (beat % 32) * 10, 0.1, 'square', 0.06, musicGainNode);
+    beat++;
+  }, 180);
+}
+
+function stopMusic() {
+  musicPlaying = false;
+  if (musicInterval) { clearInterval(musicInterval); musicInterval = null; }
+}
+
 // ─── GAME STATE ─────────────────────────────────────────
 let state = 'menu';
 let currentLevelIndex = -1;
+let isCustomLevel = false, customLevelIndex = -1;
 let lvl = null; // current level config
 let score, combo, maxCombo, mowersAvoided, speed, baseSpeed;
 let roadOffset, frameCount, difficulty;
@@ -302,10 +469,14 @@ let traffic = [], particles = [], pickups = [], obstacles = [], floatingTexts = 
 let bgStars = [];
 for (let i = 0; i < 80; i++) bgStars.push({ x: Math.random() * W, y: Math.random() * H * 0.18, s: Math.random() * 1.5 + 0.5, b: Math.random() });
 let trees = [];
-for (let i = 0; i < 30; i++) trees.push({
-  side: Math.random() < 0.5 ? 'L' : 'R',
-  x: 0, y: Math.random() * H, type: Math.floor(Math.random() * 3),
-});
+for (let i = 0; i < 30; i++) {
+  const s = Math.random() < 0.5 ? 'L' : 'R';
+  trees.push({
+    side: s,
+    x: s === 'L' ? 10 + Math.random() * (ROAD_L - 30) : ROAD_R + 20 + Math.random() * (W - ROAD_R - 30),
+    y: Math.random() * H, type: Math.floor(Math.random() * 3),
+  });
+}
 
 let storeTab = 'upgrades';
 
@@ -343,6 +514,7 @@ function starHTML(count) {
 // ─── SCREENS ────────────────────────────────────────────
 function showMainMenu() {
   state = 'menu';
+  stopMusic();
   overlay.classList.remove('hidden');
   overlay.innerHTML = `
     <div class="title">LAWN RACER</div>
@@ -352,8 +524,9 @@ function showMainMenu() {
       <span class="key">ARROWS / WASD</span><span class="action">Steer</span>
       <span class="key">N / SPACE</span><span class="action">Nitro Boost</span>
     </div>
-    <button class="btn btn-play" onclick="showLevelSelect()">PLAY</button>
-    <button class="btn btn-store" onclick="showStore()">STORE</button>
+    <button class="btn btn-play" onclick="sfxClick();showLevelSelect()">PLAY</button>
+    <button class="btn btn-store" onclick="sfxClick();showStore()">STORE</button>
+    <button class="btn btn-builder" onclick="sfxClick();showBuilder()">BUILDER</button>
     ${pData.highScore > 0 ? `<p class="hs-text">HIGH SCORE: ${pData.highScore}</p>` : ''}
   `;
 }
@@ -379,11 +552,27 @@ function showLevelSelect() {
       ` : '<div class="lock-icon">\u{1F512}</div>'}
     </div>`;
   }
+  let customHTML = '';
+  if (customLevels.length > 0) {
+    customHTML = '<div class="custom-section-title" style="width:100%;max-width:500px;padding:0 20px">CUSTOM LEVELS</div><div class="level-grid">';
+    for (let i = 0; i < customLevels.length; i++) {
+      const cl = customLevels[i];
+      customHTML += `<div class="level-card" style="border-color:rgba(124,77,255,0.3)" onclick="sfxClick();startCustomLevel(${i})">
+        <span class="custom-tag">CUSTOM</span>
+        <div class="level-name">${cl.name}</div>
+        <div class="level-desc">${cl.desc}</div>
+        <div class="level-target">TARGET: ${cl.target}</div>
+      </div>`;
+    }
+    customHTML += '</div>';
+  }
+
   overlay.innerHTML = `
     <div class="screen-title">SELECT LEVEL</div>
     <div class="coins-hdr"><span class="coin-icon">C</span> ${pData.coins}</div>
     <div class="level-grid">${cards}</div>
-    <button class="btn btn-back" onclick="showMainMenu()">BACK</button>
+    ${customHTML}
+    <button class="btn btn-back" onclick="sfxClick();showMainMenu()">BACK</button>
   `;
 }
 
@@ -476,11 +665,141 @@ function selectColor(i) {
   renderStore();
 }
 
+// ─── LEVEL BUILDER ──────────────────────────────────────
+function showBuilder() {
+  state = 'builder';
+  overlay.classList.remove('hidden');
+  renderBuilder();
+}
+
+function renderBuilder() {
+  let existing = '';
+  if (customLevels.length > 0) {
+    existing = '<div class="builder-section-title">YOUR LEVELS</div>';
+    for (let i = 0; i < customLevels.length; i++) {
+      const cl = customLevels[i];
+      existing += `<div class="custom-level-row">
+        <div><div class="custom-level-name">${cl.name}</div>
+        <div class="custom-level-desc">${cl.desc} | Target: ${cl.target}</div></div>
+        <div class="custom-level-actions">
+          <button class="custom-play-btn" onclick="sfxClick();startCustomLevel(${i})">PLAY</button>
+          <button class="custom-del-btn" onclick="deleteCustomLevel(${i})">DEL</button>
+        </div></div>`;
+    }
+  }
+
+  overlay.innerHTML = `
+    <div class="screen-title">LEVEL BUILDER</div>
+    <div class="builder-form">
+      <div class="builder-section-title">BASICS</div>
+      <div class="builder-row"><label>NAME</label><input type="text" id="b-name" maxlength="20" value="Custom Level"></div>
+      <div class="builder-row"><label>DESCRIPTION</label><input type="text" id="b-desc" maxlength="30" value="A custom level"></div>
+      <div class="builder-row"><label>TARGET SCORE</label><input type="number" id="b-target" min="100" max="99999" value="2000"></div>
+      <div class="builder-section-title">THEME</div>
+      <div class="builder-row">
+        <label>SKY TOP</label><input type="color" id="b-skyTop" value="#87CEEB">
+        <label>SKY BOT</label><input type="color" id="b-skyBot" value="#6aaf5a">
+      </div>
+      <div class="builder-row">
+        <label>GRASS</label><input type="color" id="b-grass" value="#2d8a2d">
+        <label>ROAD</label><input type="color" id="b-road" value="#555555">
+      </div>
+      <div class="builder-row"><label style="min-width:auto"><input type="checkbox" id="b-night" style="width:18px;height:18px;accent-color:#7C4DFF"> NIGHT MODE</label></div>
+      <canvas id="b-preview" class="builder-preview" width="500" height="60"></canvas>
+      <div class="builder-section-title">DIFFICULTY</div>
+      <div class="builder-row"><label>TRAFFIC</label><input type="range" id="b-traffic" min="0.3" max="3.0" step="0.1" value="1.0" oninput="updateBPreview()"><span class="range-val" id="b-traffic-val">1.0</span></div>
+      <div class="builder-row"><label>OBSTACLES</label><input type="range" id="b-obstacles" min="0.2" max="3.0" step="0.1" value="1.0" oninput="updateBPreview()"><span class="range-val" id="b-obstacles-val">1.0</span></div>
+      <div class="builder-row"><label>SPEED</label><input type="range" id="b-speed" min="0.5" max="1.5" step="0.05" value="1.0" oninput="updateBPreview()"><span class="range-val" id="b-speed-val">1.0</span></div>
+      <div class="builder-row"><label>RAMP</label><input type="range" id="b-diff" min="2000" max="12000" step="500" value="6000" oninput="updateBPreview()"><span class="range-val" id="b-diff-val">6000</span></div>
+      ${existing}
+      <div class="btn-row" style="margin:16px 0">
+        <button class="btn btn-builder" onclick="saveBuilderLevel()" style="padding:12px 32px;font-size:14px">SAVE LEVEL</button>
+        <button class="btn btn-back" onclick="sfxClick();showMainMenu()">BACK</button>
+      </div>
+    </div>
+  `;
+  setTimeout(updateBPreview, 50);
+}
+
+function updateBPreview() {
+  for (const id of ['traffic','obstacles','speed','diff']) {
+    const el = document.getElementById('b-'+id), v = document.getElementById('b-'+id+'-val');
+    if (el && v) v.textContent = el.value;
+  }
+  const pc = document.getElementById('b-preview');
+  if (!pc) return;
+  const px = pc.getContext('2d');
+  const sT = document.getElementById('b-skyTop').value;
+  const sB = document.getElementById('b-skyBot').value;
+  const gr = document.getElementById('b-grass').value;
+  const rd = document.getElementById('b-road').value;
+  const nt = document.getElementById('b-night').checked;
+  const g = px.createLinearGradient(0,0,0,60);
+  g.addColorStop(0,sT); g.addColorStop(1,sB);
+  px.fillStyle = g; px.fillRect(0,0,500,60);
+  px.fillStyle = gr; px.fillRect(0,0,80,60); px.fillRect(420,0,80,60);
+  px.fillStyle = rd; px.fillRect(80,0,340,60);
+  px.strokeStyle = 'rgba(255,255,255,0.3)'; px.lineWidth = 1; px.setLineDash([8,8]);
+  for (let i = 1; i < 4; i++) { px.beginPath(); px.moveTo(80+i*85,0); px.lineTo(80+i*85,60); px.stroke(); }
+  px.setLineDash([]);
+  if (nt) { px.fillStyle = 'rgba(0,0,20,0.5)'; px.fillRect(0,0,500,60); px.fillStyle='#fff'; px.font='bold 10px Orbitron'; px.textAlign='center'; px.fillText('NIGHT MODE',250,35); }
+}
+
+function saveBuilderLevel() {
+  const name = document.getElementById('b-name').value.trim() || 'Custom Level';
+  const desc = document.getElementById('b-desc').value.trim() || 'A custom level';
+  const target = parseInt(document.getElementById('b-target').value) || 2000;
+  const skyTop = document.getElementById('b-skyTop').value;
+  const skyBot = document.getElementById('b-skyBot').value;
+  const grass = document.getElementById('b-grass').value;
+  const road = document.getElementById('b-road').value;
+  const night = document.getElementById('b-night').checked;
+  const trafficMult = parseFloat(document.getElementById('b-traffic').value);
+  const obstacleMult = parseFloat(document.getElementById('b-obstacles').value);
+  const speedMult = parseFloat(document.getElementById('b-speed').value);
+  const diffRate = parseInt(document.getElementById('b-diff').value);
+  const rr = parseInt(road.slice(1,3),16), rg = parseInt(road.slice(3,5),16), rb = parseInt(road.slice(5,7),16);
+  const dk = c => Math.max(0,c-20).toString(16).padStart(2,'0');
+  const roadDark = `#${dk(rr)}${dk(rg)}${dk(rb)}`;
+  const gR = parseInt(grass.slice(1,3),16), gG = parseInt(grass.slice(3,5),16), gB = parseInt(grass.slice(5,7),16);
+  customLevels.push({
+    name, desc, target, reward: Math.floor(target / 20),
+    skyTop, skyBot, grass, grassAlt: `rgba(${gR},${gG},${gB},0.35)`,
+    road: [roadDark, road, roadDark], rumble: '#cc3333',
+    trafficMult, obstacleMult, speedMult, diffRate, night,
+  });
+  saveCustomLevels(customLevels);
+  sfxBuy();
+  renderBuilder();
+}
+
+function deleteCustomLevel(i) {
+  customLevels.splice(i, 1);
+  saveCustomLevels(customLevels);
+  if (state === 'builder') renderBuilder();
+  else if (state === 'levelSelect') showLevelSelect();
+}
+
 // ─── START LEVEL ────────────────────────────────────────
 function startLevel(index) {
+  isCustomLevel = false; customLevelIndex = -1;
   currentLevelIndex = index;
   lvl = LEVELS[index];
+  beginLevel();
+}
+
+function startCustomLevel(i) {
+  const cl = customLevels[i];
+  if (!cl) return;
+  isCustomLevel = true; customLevelIndex = i;
+  currentLevelIndex = -1;
+  lvl = cl;
+  beginLevel();
+}
+
+function beginLevel() {
   state = 'playing';
+  initAudio();
   score = 0; combo = 0; maxCombo = 0; mowersAvoided = 0;
   speed = 5; baseSpeed = 5;
   roadOffset = 0; frameCount = 0; difficulty = 0;
@@ -498,19 +817,23 @@ function startLevel(index) {
   traffic = []; particles = []; pickups = []; obstacles = []; floatingTexts = [];
   shakeX = 0; shakeY = 0; shakeDur = 0; flashAlpha = 0;
   overlay.classList.add('hidden');
+  startMusic();
 }
 
 // ─── LEVEL COMPLETE ─────────────────────────────────────
 function levelComplete() {
   state = 'levelComplete';
-  // Calculate stars: 1=complete, 2=combo>=5, 3=no obstacle hits
+  stopMusic();
+  sfxLevelComplete();
   let earnedStars = 1;
   if (maxCombo >= 5) earnedStars = 2;
   if (obstacleHits === 0) earnedStars = 3;
 
-  const prev = pData.levelStars[currentLevelIndex] || 0;
-  if (earnedStars > prev) pData.levelStars[currentLevelIndex] = earnedStars;
-  if (!pData.levelsCompleted.includes(currentLevelIndex)) pData.levelsCompleted.push(currentLevelIndex);
+  if (!isCustomLevel) {
+    const prev = pData.levelStars[currentLevelIndex] || 0;
+    if (earnedStars > prev) pData.levelStars[currentLevelIndex] = earnedStars;
+    if (!pData.levelsCompleted.includes(currentLevelIndex)) pData.levelsCompleted.push(currentLevelIndex);
+  }
 
   const baseReward = lvl.reward;
   const scoreBonus = Math.floor(score / 100);
@@ -521,7 +844,7 @@ function levelComplete() {
   if (score > pData.highScore) pData.highScore = score;
   saveData();
 
-  const hasNext = currentLevelIndex < LEVELS.length - 1 && isLevelUnlocked(currentLevelIndex + 1);
+  const hasNext = !isCustomLevel && currentLevelIndex < LEVELS.length - 1 && isLevelUnlocked(currentLevelIndex + 1);
 
   setTimeout(() => {
     overlay.classList.remove('hidden');
@@ -548,6 +871,8 @@ function levelComplete() {
 // ─── GAME OVER ──────────────────────────────────────────
 function gameOver() {
   state = 'gameover';
+  stopMusic();
+  sfxCrash();
   triggerShake(12, 20);
   flashAlpha = 0.8;
   for (let i = 0; i < 40; i++) spawnParticle(player.x, player.y, 'explosion');
@@ -557,6 +882,8 @@ function gameOver() {
   pData.coins += earnedCoins;
   if (score > pData.highScore) pData.highScore = score;
   saveData();
+
+  const retryAction = isCustomLevel ? `startCustomLevel(${customLevelIndex})` : `startLevel(${currentLevelIndex})`;
 
   setTimeout(() => {
     overlay.classList.remove('hidden');
@@ -570,7 +897,7 @@ function gameOver() {
       ${earnedCoins > 0 ? `<div class="reward-text"><span class="coin-icon">C</span> +${earnedCoins}</div>` : ''}
       ${lvl.target !== Infinity ? `<div style="font-size:11px;color:#777;margin:4px 0">Progress: ${Math.min(100, Math.floor(score / lvl.target * 100))}%</div>` : ''}
       <div class="btn-row">
-        <button class="btn btn-retry" onclick="startLevel(${currentLevelIndex})">RETRY</button>
+        <button class="btn btn-retry" onclick="${retryAction}">RETRY</button>
         <button class="btn btn-back" onclick="showLevelSelect()">LEVELS</button>
       </div>
     `;
@@ -691,6 +1018,7 @@ function update() {
   // Nitro (with upgrades)
   const regenRate = 0.15 + getUpgradeVal('nitroRegen');
   if ((keys[' '] || keys['n'] || keys['N']) && nitro > 0 && nitroCooldown <= 0) {
+    if (!nitroActive) sfxNitro();
     nitroActive = true;
     nitro = Math.max(0, nitro - 1.2);
     if (nitro <= 0) nitroCooldown = 30;
@@ -739,8 +1067,8 @@ function update() {
       t.y = rand(-40, -10);
       t.side = Math.random() < 0.5 ? 'L' : 'R';
       t.type = Math.floor(Math.random() * 3);
+      t.x = t.side === 'L' ? rand(10, ROAD_L - 20) : rand(ROAD_R + 20, W - 10);
     }
-    t.x = t.side === 'L' ? rand(10, ROAD_L - 20) : rand(ROAD_R + 20, W - 10);
   }
 
   // Traffic AI
@@ -796,6 +1124,7 @@ function update() {
       const pts = 10 * combo;
       score += pts;
       mowersAvoided++;
+      sfxPass();
       addFloatingText(player.x, player.y - 50, `+${pts}`, combo >= 5 ? '#ffcc00' : '#4fc3f7');
       if (combo >= 5 && combo % 5 === 0) addFloatingText(player.x, player.y - 80, `x${combo} COMBO!`, '#ff4444');
     }
@@ -831,6 +1160,7 @@ function update() {
     if (p.y > H + 40) { pickups.splice(i, 1); continue; }
     if (!p.collected && rectHit(player.x, player.y, PLAYER_W, PLAYER_H, p.x, p.y, p.size * 2, p.size * 2)) {
       p.collected = true;
+      sfxPickup();
       for (let j = 0; j < 10; j++) spawnParticle(p.x, p.y, 'pickup');
       if (p.type === 'nitro') {
         nitro = Math.min(nitroMax, nitro + 40);
@@ -864,6 +1194,7 @@ function update() {
       }
       o.active = false;
       obstacleHits++;
+      sfxObstacle();
       if (o.type === 'oil') {
         triggerShake(6, 12); player.x += rand(-40, 40); combo = 0;
         addFloatingText(o.x, o.y, 'OIL SLICK!', '#ffa000');
@@ -1009,6 +1340,27 @@ function draw() {
     vg.addColorStop(1, 'rgba(0,0,10,0.88)');
     ctx.fillStyle = vg;
     ctx.fillRect(0, 0, W, H);
+  }
+
+  // Fog overlay
+  if (theme.fog && (state === 'playing' || state === 'gameover')) {
+    const fg = ctx.createRadialGradient(player.x, player.y, 80, player.x, player.y, 400);
+    fg.addColorStop(0, 'rgba(180,190,200,0)');
+    fg.addColorStop(0.5, 'rgba(180,190,200,0.25)');
+    fg.addColorStop(1, 'rgba(180,190,200,0.55)');
+    ctx.fillStyle = fg;
+    ctx.fillRect(0, 0, W, H);
+  }
+
+  // Rain effect
+  if (theme.rain && (state === 'playing' || state === 'gameover')) {
+    ctx.strokeStyle = 'rgba(150,180,220,0.35)';
+    ctx.lineWidth = 1;
+    for (let i = 0; i < 80; i++) {
+      const rx = (i * 37 + (frameCount || 0) * 3) % W;
+      const ry = (i * 53 + (frameCount || 0) * 8) % H;
+      ctx.beginPath(); ctx.moveTo(rx, ry); ctx.lineTo(rx - 3, ry + 15); ctx.stroke();
+    }
   }
 
   ctx.restore();
